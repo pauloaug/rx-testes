@@ -12,7 +12,7 @@
 <body>
 
 	<div>
-		<svg width=800 height=600>
+		<svg width="1000" height="800">
 
 		</svg>
 
@@ -22,41 +22,59 @@
 
 <script>
 	
-	var intervalo = Rx.Observable.interval(10);
-
-	var mouse = Rx.Observable.fromEvent(document, 'mousemove');
-
-	var foo = Rx.Observable.of(1,2,3);
+	const intervalo = Rx.Observable.interval(10);
+	const gerador = Rx.Observable.interval(1000).take(10);
+	const mouse = Rx.Observable.fromEvent(document, 'mousemove');
+	const click = Rx.Observable.fromEvent(document, 'click').map(x=> Math.random() * 10 | 0);
+	// .subscribe(console.log);
 	
-	foo.subscribe(console.log);
+	var color = d3.scaleOrdinal(d3.schemeCategory10);
 
-	var bar = foo.map(x=>{
-		var c = d3.select("svg")
-			.append("circle")
-			.attr("cx", 50 * x)
-			.attr("cy", 50)
-			// .attr("r", 20)
+	// const bar = gerador.map( x => {
+	const bar = click.map( x => {
+
+		var x0 = 900;
+		var y0 = 50;
+		var grupo = d3.select("svg").append("g")
+								.attr("transform", `translate(${x0},${y0})`);
+
+		grupo.append("circle")
 			.attr("r", 20)
-			.attr("stroke-width", "2")
+			.attr("stroke-width", "1")
 			.attr("stroke", "black")
-			.attr("fill", "transparent");
+			.attr("fill", color(x));
+			// .attr("fill", "transparent");
+
+		grupo.append("text")
+			.text(x)
+			.attr("font-size", "20")
+			.attr("dy","0.35em")
+			.attr("dx", "-0.3em");
 
 		intervalo
-			.filter( x=> x<500 )
-			.subscribe(d=>{
-			c
-			  // .attr("r", function(e){return d})
+			.filter( x => x<1000 )
+			.subscribe( d => {
+			grupo
 			  .attr("transform", function(e){
-				// return `scale(${1 + d/100})`
-				return `translate(${d},${d})`
+					return `translate(${x0-d},${y0})`
 			  });
 		});
 
-		return c.node();
+		return grupo.node();
 	});
 
+	bar.subscribe();
 
-	bar.subscribe(console.log);
+	// var comb = Rx.Observable
+	// 						.combineLatest(gerador, intervalo)
+	// 						.subscribe(console.log);
+
+							// .combineLatest(gerador,vis, (b,v) => v ? b : null )
+							// .filter(x=> x != null);
+
+	// comb.subscribe(x=> console.log(`gerador e visivel?  ${x}`));
+
+
 
 	// bar.delay(100).map(x=> {
 	// 	x.attr("transform", "translate(30)");
@@ -64,7 +82,5 @@
 
 
 </script>
-
-
 </body>
 </html>
