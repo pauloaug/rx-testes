@@ -31,8 +31,7 @@
 	var color = d3.scaleOrdinal(d3.schemeCategory10);
 
 
-	// const visualizer = gerador.map( x => {
-	const visualizer = click.map( x => {
+const visualizer = function(x) {
 
 		var x0 = 900;
 		var y0 = 50;
@@ -62,9 +61,48 @@
 		});
 
 		return grupo.node();
-	});
 
-	visualizer.subscribe();
+	};
+
+
+// click.do(x=> visualizer(x)).subscribe();
+click.subscribe(x=> visualizer(x));
+
+
+	// // const visualizer = gerador.map( x => {
+	// const visualizer = click.map( x => {
+
+	// 	var x0 = 900;
+	// 	var y0 = 50;
+	// 	var grupo = d3.select("svg").append("g")
+	// 							.attr("transform", `translate(${x0},${y0})`);
+
+	// 	grupo.append("circle")
+	// 		.attr("r", 20)
+	// 		.attr("stroke-width", "1")
+	// 		.attr("stroke", "black")
+	// 		.attr("fill", color(x));
+	// 		// .attr("fill", "transparent");
+
+	// 	grupo.append("text")
+	// 		.text(x)
+	// 		.attr("font-size", "20")
+	// 		.attr("dy","0.35em")
+	// 		.attr("dx", `${-0.3 * x.toString().length}em`);
+
+	// 	intervalo
+	// 		.filter( x => x<1000 )
+	// 		.subscribe( d => {
+	// 		grupo
+	// 		  .attr("transform", function(e){
+	// 				return `translate(${x0-d},${y0})`
+	// 		  });
+	// 	});
+
+	// 	return grupo.node();
+	// });
+
+	// visualizer.subscribe();
 
 
 
