@@ -25,16 +25,47 @@
 	const intervalo = Rx.Observable.interval(10);
 	const gerador = Rx.Observable.interval(1000).take(10);
 	const mouse = Rx.Observable.fromEvent(document, 'mousemove');
-	const click = Rx.Observable.fromEvent(document, 'click').map(x=> Math.random() * 100 | 0);
-	// const yInicio = Rx.Observable.create()
+	const click = Rx.Observable.fromEvent(document, 'click');
 	
 	var color = d3.scaleOrdinal(d3.schemeCategory10);
 
+	// var event = new Event('newTimeline');
 
-const visualizer = function(x) {
+	// var y0 = 0;
+	// var y0_a = 0;
+
+	// const newTL = Rx.Observable.fromEvent(document, 'newTimeline').mapTo(1);
+
+	// const contador = newTL.scan((acc, e) => acc + e, 0);
+	// contador.subscribe(console.log);
+
+	// click.delay(2000).subscribe(x=> {
+	// 	document.dispatchEvent(event);
+	// 	console.log("emitindo evento");
+	// })
+
+	// var vis = 
+
+	var visualizer = function(x,y) {
+
+		// document.dispatchEvent(event);
 
 		var x0 = 900;
-		var y0 = 50;
+		var y0 = y*50 | 50;
+
+		if (!d3.select(`#line${y}`).node()) {
+			
+			d3.select("svg").append("line")
+				.attr("id", `line${y}`)
+				.attr("stroke-width", "1")
+				.attr("stroke", "black")
+	            .attr("x1", 5)
+	            .attr("y1", y0)
+	            .attr("x2", x0)
+	            .attr("y2", y0);
+
+		}
+
 		var grupo = d3.select("svg").append("g")
 								.attr("transform", `translate(${x0},${y0})`);
 
@@ -42,7 +73,7 @@ const visualizer = function(x) {
 			.attr("r", 20)
 			.attr("stroke-width", "1")
 			.attr("stroke", "black")
-			.attr("fill", color(x));
+			.attr("fill", color(Math.random() * 10 | 0));
 			// .attr("fill", "transparent");
 
 		grupo.append("text")
@@ -66,46 +97,16 @@ const visualizer = function(x) {
 
 
 // click.do(x=> visualizer(x)).subscribe();
-click.subscribe(x=> visualizer(x));
+const clickToNum = click
+	.map(x=> Math.random() * 100 | 0);
 
+clickToNum.subscribe(x=> visualizer(x,1));
 
-	// // const visualizer = gerador.map( x => {
-	// const visualizer = click.map( x => {
+gerador
+	.subscribe(x=> visualizer(x,2));	
 
-	// 	var x0 = 900;
-	// 	var y0 = 50;
-	// 	var grupo = d3.select("svg").append("g")
-	// 							.attr("transform", `translate(${x0},${y0})`);
-
-	// 	grupo.append("circle")
-	// 		.attr("r", 20)
-	// 		.attr("stroke-width", "1")
-	// 		.attr("stroke", "black")
-	// 		.attr("fill", color(x));
-	// 		// .attr("fill", "transparent");
-
-	// 	grupo.append("text")
-	// 		.text(x)
-	// 		.attr("font-size", "20")
-	// 		.attr("dy","0.35em")
-	// 		.attr("dx", `${-0.3 * x.toString().length}em`);
-
-	// 	intervalo
-	// 		.filter( x => x<1000 )
-	// 		.subscribe( d => {
-	// 		grupo
-	// 		  .attr("transform", function(e){
-	// 				return `translate(${x0-d},${y0})`
-	// 		  });
-	// 	});
-
-	// 	return grupo.node();
-	// });
-
-	// visualizer.subscribe();
-
-
-
+const combine = Rx.Observable.combineLatest(clickToNum, gerador);
+combine.subscribe(x=> visualizer(x,3));
 
 
 </script>
