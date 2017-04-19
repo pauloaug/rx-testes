@@ -11,124 +11,191 @@
 </head>
 
 <body>
-<!-- 
-	<div>
-		<svg width="1000" height="800">
-		</svg>
-	</div>
- -->
-<script>
-	
-	const intervalo = Rx.Observable.interval(10);
-	const gerador = Rx.Observable.interval(3000).take(30);
-	const mouse = Rx.Observable.fromEvent(document, 'mousemove');
-	const click = Rx.Observable.fromEvent(document, 'click');
-	
-	var color = d3.scaleOrdinal(d3.schemePastel1);
 
-var MODULE = (function () {
-	var my = {},
-		  counter = 0;
-		  x0 = 900;
-		  y0 = 50;
-		  svgExists = false;
+	<script>
 
-	function privateMethod() {
-		// ...
-	}
+		const intervalo = Rx.Observable.interval(10);
+		// .filter( x => x<1000 )
+		const gerador = Rx.Observable.interval(1000).take(30);
+		const mouse = Rx.Observable.fromEvent(document, 'mousemove');
+		const click = Rx.Observable.fromEvent(document, 'click');
 
-	function newLane(y) {
-			d3.select("svg").append("line")
-				.attr("id", `line${y}`)
-				.attr("stroke-width", "1")
-				.attr("stroke", "grey")
-	            .attr("x1", 5)
-	            .attr("y1", y0 * y)
-	            .attr("x2", x0)
-	            .attr("y2", y0 * y);
-	}
+		var color = d3.scaleOrdinal(d3.schemePastel1);
 
-	function newData(x,y) {
-		var x0 = 900;
-		var y0 = y*50;
+		var step;
 
-		if (!d3.select(`#line${y}`).node()) {			
-			d3.select("svg").append("line")
-				.attr("id", `line${y}`)
-				.attr("stroke-width", "1")
-				.attr("stroke", "grey")
-	            .attr("x1", 5)
-	            .attr("y1", y0)
-	            .attr("x2", x0)
-	            .attr("y2", y0);
-		}
-
-		var grupo = d3.select("svg")
-								.append("g")
-								.attr("transform", `translate(${x0},${y0})`);
-
-		grupo.append("circle")
-			.attr("r", 20)
-			.attr("stroke-width", "1")
-			.attr("stroke", "black")
-			.attr("fill", color(Math.random() * 10 | 0));
-
-		grupo.append("text")
-			.text( x.toString())
-			.attr("font-size", `${1.5 - (0.15 * x.toString().length)}em`)
-			.attr("dy","0.35em")
-			.attr("dx", `${-0.3 * x.toString().length}em`);
-
-		intervalo
-			.filter( x => x<1000 )
-			.subscribe( d => {
-			grupo
-			  .attr("transform", function(e){
-					return `translate(${x0-d},${y0})`
-			  });
+		intervalo.subscribe(x=> {
+			step = x;
 		});
 
-		return grupo.node();
+		var MODULE = (function () {
+			var my = {},
+			counter = 0,
+			y0 = 50,
+			svgExists = false,
+			width = 1000,
+			height = 800,
+			x0 = width * 0.9;
+
+
+			// function newLane(y) {
+			// 	var line = d3.select("svg").append("line")
+			// 	.attr("id", `line${y}`)
+			// 	.attr("stroke-width", "1")
+			// 	.attr("stroke", "grey")
+			// 	.attr("x1", 5)
+			// 	.attr("y1", y0 * y)
+			// 	.attr("x2", x0)
+			// 	.attr("y2", y0 * y);
+			// }
+
+			function newData(x, y, type) {
+				var x0 = width * 0.9;
+				var y0 = y * 50;
+				var text = x.toString().substring(0,5);
+
+				var grupo = d3.select("svg g")
+				.append("g")
+				.attr("transform", `translate(${x0 + step}, ${y0})`);
+
+				switch(type) {
+
+					case "completed":
+						grupo.append("line")
+						.attr("stroke-width", "3")
+						.attr("stroke", "black")
+						.attr("x1", 50)
+						.attr("y1", -15)
+						.attr("x2", 50)
+						.attr("y2", 15);
+					break;
+
+					default:
+						grupo.append("circle")
+						.attr("r", 20)
+						.attr("stroke-width", "1")
+						.attr("stroke", "black")
+						.attr("fill", color(Math.random() * 10 | 0));
+
+						grupo.append("text")
+						.text(text)
+						.attr("font-size", `${1.5 - (0.15 * text.length)}em`)
+						.attr("dy","0.35em")
+						.attr("dx", `${-0.3 * text.length}em`);
+				} 
+
+		// return grupo.node();
+	}	
+
+	function grid () {
+		var svg = d3.select("svg");
+
+		for (var i = 0; i < Math.floor(width/50); i++) {
+			svg.append("line")
+			.attr("id", `line${i}`)
+			.attr("stroke-width", "1")
+			.attr("stroke", function(d){return i % 2 == 0 ? "lightgrey" : "grey"})
+			.attr("x1", 50 * i)
+			.attr("y1", 0)
+			.attr("x2", 50 * i)
+			.attr("y2", width);
+		}
+
+		for (var i = 0; i < Math.floor(height/50); i++) {
+			svg.append("line")
+			.attr("id", `line${i}`)
+			.attr("stroke-width", "2")
+			.attr("stroke", "grey")
+			.attr("x1", 0)
+			.attr("y1", 50 * i)
+			.attr("x2", width)
+			.attr("y2", 50 * i);
+		}
+
+		
 	}
 
-	my.moduleProperty = 1;
 
-	my.moduleMethod = function () {
-		// ...
-	};
+	function startRollingTape () {
+		if(!svgExists){
+			if (!d3.select("#rxVisSVG").node()) {
+				svgExists = true;
+				// console.log("----   criando div > svg > g");
+				var div = d3.select("body").append("div")
+				.attr("class", "rxVis");
+				
+				var svg = div.append("svg")
+				.attr("class", "rxVisSVG")
+				.attr("width", width)
+				.attr("height", height);
+				
+				grid();
+
+				svg.append("g").attr("class","g1");
+
+				intervalo
+				.subscribe( d => {
+					var g1 = d3.select("svg g");
+					g1.attr("transform", function(e){
+						return `translate(${-d})`
+					});
+				});
+			}
+		}	
+	}
+
 
 	my.visualize = function(stream) {
-		if (!svgExists || !d3.select("#rxVisSVG").node()) {
-			var div = d3.select("body").append("div").attr("class", "rxVis");
-			var svg = div.append("svg")
-				.attr("class", "rxVisSVG")
-				.attr("width", "1000")
-				.attr("height", "800");
-				
-			svgExists = true;
-			}
-					
+		
+		startRollingTape();
+
 		var foo = 0;
+		
 		stream.first().subscribe( x=> {
 			foo = ++counter;
-			console.log(`criando lane ${counter}`);
-			newLane(counter);
-		})
-		stream.subscribe( x=> {
-			console.log(`dado novo: ${x.toString()}. counter: ${counter}   foo: ${foo}`);
-			newData(x,foo);
-		})
+			// console.log(`criando lane ${counter}`);
+			// newLane(counter);
+		});
+		
+		stream.subscribe(
+			function (x) {
+				newData(x,foo)
+			},
+			function (err) {
+				console.log('Error: %s', err);
+			},
+			function () {
+				console.log('Completed')
+				newData("aaa",foo, "completed")
+
+			}
+			);
 	}
+
 
 	return my;
 }());
 
-MODULE.visualize(gerador);
-MODULE.visualize(gerador);
-MODULE.visualize(gerador.delay(500));
-MODULE.visualize(click.mapTo(1));
+
+		MODULE.visualize(gerador);
+		MODULE.visualize(gerador.take(2));
+		MODULE.visualize(gerador.take(4));
+		MODULE.visualize(gerador.map(x=> x*2));
+		MODULE.visualize(gerador.delay(500));
+		MODULE.visualize(click.mapTo(1));
 
 
-</script>
+		// gerador.take(2).subscribe(
+		// 	function (x) {
+		// 		console.log('Next: %s', x);
+		// 	},
+		// 	function (err) {
+		// 		console.log('Error: %s', err);
+		// 	},
+		// 	function () {
+		// 		console.log('Completed');
+		// 	});
+
+	</script>
 </body>
 </html>
