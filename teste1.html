@@ -6,67 +6,65 @@
 
 	<script type="text/javascript" src="d3.min.js"></script>
 	<script type="text/javascript" src="Rx.min.js"></script>
+	<script type="text/javascript" src="d3-scale-chromatic.min.js"></script>
 
 </head>
 
 <body>
-
+<!-- 
 	<div>
 		<svg width="1000" height="800">
-
 		</svg>
-
 	</div>
-
-
-
+ -->
 <script>
 	
 	const intervalo = Rx.Observable.interval(10);
-	const gerador = Rx.Observable.interval(1000).take(10);
+	const gerador = Rx.Observable.interval(3000).take(30);
 	const mouse = Rx.Observable.fromEvent(document, 'mousemove');
 	const click = Rx.Observable.fromEvent(document, 'click');
 	
-	var color = d3.scaleOrdinal(d3.schemeCategory10);
+	var color = d3.scaleOrdinal(d3.schemePastel1);
 
-	// var event = new Event('newTimeline');
+var MODULE = (function () {
+	var my = {},
+		  counter = 0;
+		  x0 = 900;
+		  y0 = 50;
+		  svgExists = false;
 
-	// var y0 = 0;
-	// var y0_a = 0;
+	function privateMethod() {
+		// ...
+	}
 
-	// const newTL = Rx.Observable.fromEvent(document, 'newTimeline').mapTo(1);
-
-	// const contador = newTL.scan((acc, e) => acc + e, 0);
-	// contador.subscribe(console.log);
-
-	// click.delay(2000).subscribe(x=> {
-	// 	document.dispatchEvent(event);
-	// 	console.log("emitindo evento");
-	// })
-
-	// var vis = 
-
-	var visualizer = function(x,y) {
-
-		// document.dispatchEvent(event);
-
-		var x0 = 900;
-		var y0 = y*50 | 50;
-
-		if (!d3.select(`#line${y}`).node()) {
-			
+	function newLane(y) {
 			d3.select("svg").append("line")
 				.attr("id", `line${y}`)
 				.attr("stroke-width", "1")
-				.attr("stroke", "black")
+				.attr("stroke", "grey")
+	            .attr("x1", 5)
+	            .attr("y1", y0 * y)
+	            .attr("x2", x0)
+	            .attr("y2", y0 * y);
+	}
+
+	function newData(x,y) {
+		var x0 = 900;
+		var y0 = y*50;
+
+		if (!d3.select(`#line${y}`).node()) {			
+			d3.select("svg").append("line")
+				.attr("id", `line${y}`)
+				.attr("stroke-width", "1")
+				.attr("stroke", "grey")
 	            .attr("x1", 5)
 	            .attr("y1", y0)
 	            .attr("x2", x0)
 	            .attr("y2", y0);
-
 		}
 
-		var grupo = d3.select("svg").append("g")
+		var grupo = d3.select("svg")
+								.append("g")
 								.attr("transform", `translate(${x0},${y0})`);
 
 		grupo.append("circle")
@@ -74,11 +72,10 @@
 			.attr("stroke-width", "1")
 			.attr("stroke", "black")
 			.attr("fill", color(Math.random() * 10 | 0));
-			// .attr("fill", "transparent");
 
 		grupo.append("text")
-			.text(x)
-			.attr("font-size", "20")
+			.text( x.toString())
+			.attr("font-size", `${1.5 - (0.15 * x.toString().length)}em`)
 			.attr("dy","0.35em")
 			.attr("dx", `${-0.3 * x.toString().length}em`);
 
@@ -92,21 +89,44 @@
 		});
 
 		return grupo.node();
+	}
 
+	my.moduleProperty = 1;
+
+	my.moduleMethod = function () {
+		// ...
 	};
 
+	my.visualize = function(stream) {
+		if (!svgExists || !d3.select("#rxVisSVG").node()) {
+			var div = d3.select("body").append("div").attr("class", "rxVis");
+			var svg = div.append("svg")
+				.attr("class", "rxVisSVG")
+				.attr("width", "1000")
+				.attr("height", "800");
+				
+			svgExists = true;
+			}
+					
+		var foo = 0;
+		stream.first().subscribe( x=> {
+			foo = ++counter;
+			console.log(`criando lane ${counter}`);
+			newLane(counter);
+		})
+		stream.subscribe( x=> {
+			console.log(`dado novo: ${x.toString()}. counter: ${counter}   foo: ${foo}`);
+			newData(x,foo);
+		})
+	}
 
-// click.do(x=> visualizer(x)).subscribe();
-const clickToNum = click
-	.map(x=> Math.random() * 100 | 0);
+	return my;
+}());
 
-clickToNum.subscribe(x=> visualizer(x,1));
-
-gerador
-	.subscribe(x=> visualizer(x,2));	
-
-const combine = Rx.Observable.combineLatest(clickToNum, gerador);
-combine.subscribe(x=> visualizer(x,3));
+MODULE.visualize(gerador);
+MODULE.visualize(gerador);
+MODULE.visualize(gerador.delay(500));
+MODULE.visualize(click.mapTo(1));
 
 
 </script>
