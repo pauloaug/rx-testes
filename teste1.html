@@ -94,7 +94,8 @@
 			svg.append("line")
 			.attr("id", `line${i}`)
 			.attr("stroke-width", "1")
-			.attr("stroke", function(d){return i % 2 == 0 ? "lightgrey" : "grey"})
+			.attr("stroke", "lightgrey")
+			.attr("stroke-dasharray", 5)
 			.attr("x1", 50 * i)
 			.attr("y1", 0)
 			.attr("x2", 50 * i)
@@ -179,7 +180,7 @@
 
 		MODULE.visualize(gerador);
 		MODULE.visualize(gerador.take(2));
-		MODULE.visualize(gerador.take(4));
+		MODULE.visualize(gerador.sample(click));
 		MODULE.visualize(gerador.map(x=> x*2));
 		MODULE.visualize(gerador.delay(500));
 		MODULE.visualize(click.mapTo(1));
