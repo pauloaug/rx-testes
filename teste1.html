@@ -7,6 +7,7 @@
 	<script type="text/javascript" src="d3.min.js"></script>
 	<script type="text/javascript" src="Rx.min.js"></script>
 	<script type="text/javascript" src="d3-scale-chromatic.min.js"></script>
+	<script type="text/javascript" src="md5.min.js"></script>
 
 </head>
 
@@ -14,45 +15,28 @@
 
 	<script>
 
-		const intervalo = Rx.Observable.interval(10);
-		// .filter( x => x<1000 )
-		const gerador = Rx.Observable.interval(1000).take(30);
-		const mouse = Rx.Observable.fromEvent(document, 'mousemove');
-		const click = Rx.Observable.fromEvent(document, 'click');
 
-		var color = d3.scaleOrdinal(d3.schemePastel1);
-
-		var step;
-
-		intervalo.subscribe(x=> {
-			step = x;
-		});
 
 		var MODULE = (function () {
 			var my = {},
 			counter = 0,
 			y0 = 50,
 			svgExists = false,
-			width = 1000,
-			height = 800,
-			x0 = width * 0.9;
+			width = 800,
+			height = 400,
+			x0 = width * 0.8;
+			lanesGap = function(){ return height/13 }
+			minHW = d3.min([height,width])
 
+			function newData(d, y, type) {
 
-			// function newLane(y) {
-			// 	var line = d3.select("svg").append("line")
-			// 	.attr("id", `line${y}`)
-			// 	.attr("stroke-width", "1")
-			// 	.attr("stroke", "grey")
-			// 	.attr("x1", 5)
-			// 	.attr("y1", y0 * y)
-			// 	.attr("x2", x0)
-			// 	.attr("y2", y0 * y);
-			// }
+				// var d = my.appendMD5(data);
 
-			function newData(x, y, type) {
-				var x0 = width * 0.9;
-				var y0 = y * 50;
-				var text = x.toString().substring(0,5);
+				// var x0 = width * 0.9;
+				var y0 = y * lanesGap();
+				var text = d.data.toString().substring(0,5);
+				// console.log(text, d, parseInt( d.md5, 16 ));
+				// console.log(d);
 
 				var grupo = d3.select("svg g")
 				.append("g")
@@ -64,138 +48,184 @@
 						grupo.append("line")
 						.attr("stroke-width", "3")
 						.attr("stroke", "black")
-						.attr("x1", 50)
-						.attr("y1", -15)
-						.attr("x2", 50)
-						.attr("y2", 15);
+						.attr("x1", minHW/10)
+						.attr("y1", -minHW/40)
+						.attr("x2", minHW/10)
+						.attr("y2", minHW/40);
+					break;
+
+					case "error":
+						var g2 = grupo.append("g")
+						// .attr("transform", `translate(${x0 + step + 2}, ${y0})`);
+
+						var line1 = g2.append("line")
+						.attr("dx", minHW/20)
+						.attr("stroke-width", "3")
+						.attr("stroke", "red")
+						.attr("x1", -minHW/40 + minHW/10)
+						.attr("y1", -minHW/40)
+						.attr("x2", minHW/40  + minHW/10)
+						.attr("y2", minHW/40);
+
+						var line2 = g2.append("line")
+						.attr("stroke-width", "3")
+						.attr("stroke", "red")
+						.attr("x1", -minHW/40 + minHW/10)
+						.attr("y1", minHW/40)
+						.attr("x2", minHW/40 + minHW/10)
+						.attr("y2", -minHW/40);
 					break;
 
 					default:
 						grupo.append("circle")
-						.attr("r", 20)
+						.attr("r", minHW / 30)
 						.attr("stroke-width", "1")
 						.attr("stroke", "black")
-						.attr("fill", color(Math.random() * 10 | 0));
+						.attr("fill", color( parseInt( d.md5, 16 ) ));
+							// .attr("fill", color(Math.random() * 10 | 0));
 
-						grupo.append("text")
-						.text(text)
-						.attr("font-size", `${1.5 - (0.15 * text.length)}em`)
-						.attr("dy","0.35em")
-						.attr("dx", `${-0.3 * text.length}em`);
-				} 
+							grupo.append("text")
+							.text(text)
+							.attr("font-size", `${ (minHW / 500 ) * (1.5 - (0.15 * text.length))}em`)
+							.attr("dy","0.35em")
+							.attr("dx", `${-0.3 * text.length}em`);
+						} 
 
-		// return grupo.node();
-	}	
+				// return grupo.node();
+				}	
 
-	function grid () {
-		var svg = d3.select("svg");
+			function grid () {
+				var svg = d3.select("svg");
 
-		for (var i = 0; i < Math.floor(width/50); i++) {
-			svg.append("line")
-			.attr("id", `line${i}`)
-			.attr("stroke-width", "1")
-			.attr("stroke", "lightgrey")
-			.attr("stroke-dasharray", 5)
-			.attr("x1", 50 * i)
-			.attr("y1", 0)
-			.attr("x2", 50 * i)
-			.attr("y2", width);
-		}
+				for (var i = 0; i < Math.ceil(x0/10); i++) {
+					svg.append("line")
+					// .attr("id", `line${i}`)
+					.attr("stroke-width", "1")
+					.attr("stroke", "lightgrey")
+					.attr("stroke-dasharray", 5)
+					.attr("x1", x0/10 * i)
+					.attr("y1", 0)
+					.attr("x2", x0/10 * i)
+					.attr("y2", height);
+				}
 
-		for (var i = 0; i < Math.floor(height/50); i++) {
-			svg.append("line")
-			.attr("id", `line${i}`)
-			.attr("stroke-width", "2")
-			.attr("stroke", "grey")
-			.attr("x1", 0)
-			.attr("y1", 50 * i)
-			.attr("x2", width)
-			.attr("y2", 50 * i);
-		}
+				for (var i = 0; i < Math.floor(lanesGap()); i++) {
+					svg.append("line")
+					.attr("id", `line${i}`)
+					.attr("stroke-width", "2")
+					.attr("stroke", "grey")
+					.attr("x1", 0)
+					.attr("y1", lanesGap() * i)
+					.attr("x2", x0)
+					.attr("y2", lanesGap() * i)
+					.attr("visibility", "hidden");
+				}
+			}
 
-		
-	}
 
+			function start () {
+				if (!svgExists) {
+					if (!d3.select("#rxVisSVG").node()) {
+						svgExists = true;
+						var div = d3.select("body").append("div")
+						.attr("class", "rxVis");
+						
+						var svg = div.append("svg")
+						.attr("class", "rxVisSVG")
+						.attr("width", width)
+						.attr("height", height);
+						
+						grid();
 
-	function startRollingTape () {
-		if(!svgExists){
-			if (!d3.select("#rxVisSVG").node()) {
-				svgExists = true;
-				// console.log("----   criando div > svg > g");
-				var div = d3.select("body").append("div")
-				.attr("class", "rxVis");
+						svg.append("g").attr("class","g1");
+
+						intervalo
+						.subscribe( d => {
+							var g1 = d3.select("svg g");
+							g1.attr("transform", function(e){
+								return `translate(${-d})`
+							});
+						});
+					}
+				}	
+			}
+
+			my.visualize = function( stream ) {
 				
-				var svg = div.append("svg")
-				.attr("class", "rxVisSVG")
-				.attr("width", width)
-				.attr("height", height);
-				
-				grid();
+				start();
 
-				svg.append("g").attr("class","g1");
+				var foo = 0;
 
-				intervalo
-				.subscribe( d => {
-					var g1 = d3.select("svg g");
-					g1.attr("transform", function(e){
-						return `translate(${-d})`
-					});
+				stream_MD5 = stream.map( my.appendMD5 );
+
+				stream_MD5.first().subscribe( x=> {
+					foo = ++counter;
+					d3.select(`#line${counter}`)
+					.attr("visibility", "visible");
 				});
+				
+				stream_MD5.subscribe(
+					function (x) {
+						newData(x,foo)
+					},
+					function (err) {
+						console.log('Error: %s', err);
+						newData({"data": "foo"}, foo, "error");
+
+					},
+					function () {
+						// console.log('Completed')
+
+						var obj = {
+							"data": "aaa"
+						// "md5": md5( x.toString() )
+						// "time": Date.now()
+					}
+					newData(obj, foo, "completed");
+				}
+				);
 			}
-		}	
-	}
 
+			my.appendMD5 = function( d ) {
+				var obj = d;
+				console.log(d, d.md5);
 
-	my.visualize = function(stream) {
-		
-		startRollingTape();
+				if ( !d.md5 ) {	
+					obj = {
+						"data": d,
+						// "md5": md5( d.toString() ).toString().substring(0,5)
+						"md5": md5( d.toString() ).toString().substring(0,5)
+					};
+					console.log(obj);
+				}
+				return obj;  
+			}
 
-		var foo = 0;
-		
-		stream.first().subscribe( x=> {
-			foo = ++counter;
-			// console.log(`criando lane ${counter}`);
-			// newLane(counter);
+			return my;
+
+		}());
+
+		const intervalo = Rx.Observable.interval(10);
+		const gerador = Rx.Observable.interval(500).take(30);
+		const mouse = Rx.Observable.fromEvent(document, 'mousemove');
+		const click = Rx.Observable.fromEvent(document, 'click');
+
+		var color = d3.scaleOrdinal(d3.schemePastel1);
+
+		var step;
+
+		intervalo.subscribe( x=> {
+			step = x;
 		});
-		
-		stream.subscribe(
-			function (x) {
-				newData(x,foo)
-			},
-			function (err) {
-				console.log('Error: %s', err);
-			},
-			function () {
-				console.log('Completed')
-				newData("aaa",foo, "completed")
-
-			}
-			);
-	}
-
-
-	return my;
-}());
-
 
 		MODULE.visualize(gerador);
 		MODULE.visualize(gerador.take(2));
 		MODULE.visualize(gerador.sample(click));
-		MODULE.visualize(gerador.map(x=> x*2));
-		MODULE.visualize(gerador.delay(500));
+		MODULE.visualize(gerador.map(x => x*2).filter(x => x % 4 == 0 ));
+		MODULE.visualize(gerador.delay(200));
 		MODULE.visualize(click.mapTo(1));
+		MODULE.visualize(Rx.Observable.merge(gerador, click.mapTo("a")));
 
-
-		// gerador.take(2).subscribe(
-		// 	function (x) {
-		// 		console.log('Next: %s', x);
-		// 	},
-		// 	function (err) {
-		// 		console.log('Error: %s', err);
-		// 	},
-		// 	function () {
-		// 		console.log('Completed');
-		// 	});
 
 	</script>
 </body>
