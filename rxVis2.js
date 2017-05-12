@@ -1,21 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="UTF-8">
-	<title>rxVis test</title>
-
-	<script type="text/javascript" src="d3.min.js"></script>
-	<script type="text/javascript" src="Rx.min.js"></script>
-	<script type="text/javascript" src="d3-scale-chromatic.min.js"></script>
-	<script type="text/javascript" src="md5.min.js"></script>
-
-</head>
-
-<body>
-
-	<script>
-
-		var rxVis = (function () {
+var rxVis = (function () {
 			var my = {},
 			counter = 0,
 			y0 = 50,
@@ -202,29 +185,3 @@
 			return my;
 
 		}());
-
-		const interval = Rx.Observable.interval(10);
-		const source1 = Rx.Observable.interval(500).take(30);
-		const mouse = Rx.Observable.fromEvent(document, 'mousemove');
-		const click = Rx.Observable.fromEvent(document, 'click');
-
-		var color = d3.scaleOrdinal(d3.schemePastel1);
-
-		var step;
-
-		interval.subscribe( x=> {
-			step = x;
-		});
-
-		rxVis.visualize(source1);
-		rxVis.visualize(source1.take(2));
-		rxVis.visualize(source1.sample(click));
-		rxVis.visualize(source1.map(x => x*2).filter(x => x % 4 == 0 ));
-		rxVis.visualize(source1.delay(200));
-		rxVis.visualize(click.mapTo(1));
-		rxVis.visualize(Rx.Observable.merge(source1, click.mapTo("a")));
-
-
-	</script>
-</body>
-</html>

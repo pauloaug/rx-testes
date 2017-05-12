@@ -1,24 +1,26 @@
 # rx-vis
 
-rx-vis is a dynamic data visualization UI module to display and debug data streams. 
+rx-vis is a live [rxjs marble diagram](http://rxmarbles.com/) that shows data streams visualization. 
+You can use it when debugging the output stream of your `Rx.Observable` instances.
 
-Provide a brief (1 paragraph or less), meaningful description of the project and what it does. If the project has a UI, include a screenshot as well.
+![Demo of rx-vis](demo.gif "Logo Title Text 1")
 
-If more comprehensive documentation exists, link to it here.
 
 ## Features
 
-Describe the core features of the project (what does it do?) in the form of a bulleted list:
-
-- Feature #1
-- Feature #2
-- Feature #3
+- data is represented by circles moving from right to left
+- 
 
 ## Getting Started
 
 Provide installation instructions, general usage guidance, API examples, and build and deployment information. Assume as little prior knowledge as possible, describing everything in clear and coherent steps. Avoid words such as "just" and "simple," which can be off putting to users who do not understand the instructions.
 
 ### Installation/Dependencies
+
+- d3.min.js
+- Rx.min.js
+- d3-scale-chromatic.min.js
+- md5.min.js
 
 How does a user get up and running with your project? What dependencies does the project have? Aim to describe these in clear and simple steps. Provide external links
 
